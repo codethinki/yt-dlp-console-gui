@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33530.505
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yt-dlp-console-gui", "yt-dlp-console-gui.vcxproj", "{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		max_performance|x64 = max_performance|x64
+		max_performance|x86 = max_performance|x86
+		minimal_size|x64 = minimal_size|x64
+		minimal_size|x86 = minimal_size|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Debug|x64.ActiveCfg = Debug|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Debug|x64.Build.0 = Debug|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Debug|x86.ActiveCfg = Debug|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Debug|x86.Build.0 = Debug|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.max_performance|x64.ActiveCfg = max_performance|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.max_performance|x64.Build.0 = max_performance|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.max_performance|x86.ActiveCfg = max_performance|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.max_performance|x86.Build.0 = max_performance|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.minimal_size|x64.ActiveCfg = minimal_size|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.minimal_size|x64.Build.0 = minimal_size|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.minimal_size|x86.ActiveCfg = minimal_size|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.minimal_size|x86.Build.0 = minimal_size|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Release|x64.ActiveCfg = Release|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Release|x64.Build.0 = Release|x64
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Release|x86.ActiveCfg = Release|Win32
+		{A6D4181F-EF5E-4517-B8A5-FDE64FB6AA3F}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CF71EAF-29E0-4968-8763-41EFAE8A6D92}
+	EndGlobalSection
+EndGlobal
