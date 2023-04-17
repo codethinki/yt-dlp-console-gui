@@ -1,8 +1,7 @@
+#include <fstream>
+#include <functional>
 #include <iostream>
 #include <string>
-#include <functional>
-#include <fstream>
-#include <cassert>
 #include <Windows.h>
 
 using namespace std;
@@ -67,7 +66,7 @@ void setSetting(const Setting setting, const string& content) {
 string getSetting(const Setting setting) {
     auto lines = loadFile("settings.txt");
     checkSettings(lines);
-    return lines[setting] <= defaultSettings[setting] ? "\"\"" : '\"' + lines[setting].substr(defaultSettings[setting].size() + 1) + '\"';
+    return lines[setting] <= defaultSettings[setting] ? "\"\"" : '\"' + lines[setting].substr(defaultSettings[setting].size()) + '\"';
 }
 
 string cmdUrl{}, cmdQuality{}, cmdFps{};
@@ -201,10 +200,11 @@ int submit(const int option) {
     if(option == 0)
         cmd += " -S " + cmdQuality + cmdFps + " -q --progress -P " + getSetting(SETTING_PATH_VIDEO) + " " + cmdUrl +
             "2>error.txt";
-    else if(option == 1)
-        cmd += " -x --audio-quality 0 -q --progress --audio-format \"m4a\" -P " + getSetting(SETTING_PATH_AUDIO) + " " +
-            cmdUrl + "2>error.txt";
-
+    else if(option == 1){
+        const string ffmpegPath = getSetting(SETTING_PATH_FFMPEG);
+        cmd += " -x --audio-quality 0 -q --progress --audio-format \"m4a\" -P " + getSetting(SETTING_PATH_AUDIO) + ' ' +
+            (ffmpegPath.empty() ? "" : "--ffmpeg-location " + ffmpegPath + ' ') + cmdUrl + "2>error.txt";
+    }
     cout << cmd << '\n';
 
     system(cmd.c_str());
