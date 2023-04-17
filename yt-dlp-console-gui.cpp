@@ -5,46 +5,99 @@
 #include <Windows.h>
 
 using namespace std;
+//#####################################################
+//definitions
+//#####################################################
 
-struct StringVector {
-    int currentPos = 0;
-    string array[50]{};
-
-    void add(const string& str) { array[currentPos++] = str; }
-    void add2(const string& str1, const string& str2) {
-        array[currentPos++] = str1;
-        array[currentPos++] = str2;
-    }
-    void add4(const string& str1, const string& str2, const string& str3, const string& str4) {
-        array[currentPos++] = str1;
-        array[currentPos++] = str2;
-        array[currentPos++] = str3;
-        array[currentPos++] = str4;
-    }
-    string& operator[](const int index) { return array[index]; }
-};
-
+//packages
 constexpr int packagesCount = 3;
-enum Setting { SETTING_PATH_VIDEO, SETTING_PATH_AUDIO, SETTING_PATH_FFMPEG, SETTINGS_SIZE };
-
-const string defaultSettings[SETTINGS_SIZE]{"videoPath=", "audioPath=", "ffmpegPath="};
 const string packages[packagesCount]{"yt-dlp", "wheel", "ffmpeg"};
 
-bool fileEmpty(const string& filepath, const bool remove_if_empty) {
-    ifstream file(filepath);
-    const bool result = file.peek() == ifstream::traits_type::eof();
-    file.close();
-    if(remove_if_empty && result) remove(filepath.c_str());
-    return result;
+int packagesUpdate();
+int packagesVersion();
+string extractVersion(const string& package_name);
+
+
+//settings
+enum Setting { SETTING_PATH_VIDEO, SETTING_PATH_AUDIO, SETTING_PATH_FFMPEG, SETTINGS_SIZE };
+const string defaultSettings[SETTINGS_SIZE]{"videoPath=", "audioPath=", "ffmpegPath="};
+
+void checkSettings(vector<string>& lines);
+void setSetting(Setting setting, const string& content);
+string getSetting(Setting setting);
+int setPath(Setting setting);
+
+//files
+bool fileEmpty(const string& filepath, bool remove_if_empty);
+vector<string> loadFile(const string& filename);
+
+
+//options and menus for commands
+string cmdUrl{}, cmdQuality{}, cmdFps{};
+int homeMenu();
+int qualityMenu();
+int urlMenu();
+int fpsMenu();
+int submit(int option);
+
+//other
+void displayOptions(const vector<string>& options, int start);
+string getInput(const vector<string>& valid_inputs);
+
+//#####################################################
+//implementations
+//#####################################################
+
+
+//packages
+int packagesUpdate() {
+    system("python.exe -m pip install --upgrade pip");
+    system("pip install wheel --upgrade");
+    system("pip install ffmpeg --upgrade");
+    system("pip install yt-dlp --upgrade");
+    return 0;
 }
-vector<string> loadFile(const string& filename) {
-    ifstream file(filename);
-    vector<string> lines;
-    string line;
-    while(getline(file, line)) lines.push_back(line);
-    file.close();
-    return lines;
+string extractVersion(const string& package_name) {
+    cout << package_name << " version" << '\n';
+    system(("pip show " + package_name + ">temp.txt").c_str());
+    const auto lines = loadFile("temp.txt");
+    remove("temp.txt");
+    return lines[1].substr(9);
 }
+int packagesVersion() {
+    cout << extractVersion("yt-dlp") << '\n' << '\n';
+    cout << extractVersion("wheel") << '\n' << '\n';
+    cout << extractVersion("ffmpeg") << '\n';
+    system("pause");
+    return 0;
+}
+void installPackageMenu(const string& package) {
+    cout << '\n' << "install package " << package << " now?" << '\n';
+    displayOptions({"no (quit)", "yes"}, 0);
+
+    if(const int option = stoi(getInput({"0", "1"})); option == 0) exit(EXIT_FAILURE);
+    else if(option == 1) system(("pip install" + package).c_str());
+}
+void checkPackageInstallation(const string& package) {
+    system(("pip show " + package + ">NUL 2>error.txt").c_str());
+    if(!fileEmpty("error.txt", true)) {
+        cout << "ERROR: " + package + " is not installed" << '\n';
+        installPackageMenu(package);
+        system("cls");
+    }
+    remove("error.txt");
+}
+void checkForPackages() {
+    system("pip help>NUL 2>error.txt");
+    if(!fileEmpty("error.txt", true)) {
+        cout << "ERROR: pip is not installed or not in PATH. Fix that first" << '\n';
+        remove("error.txt");
+        exit(EXIT_FAILURE);
+    }
+    for(auto& package : packages) checkPackageInstallation(package);
+}
+
+//settings
 void checkSettings(vector<string>& lines) {
     if(lines.size() < SETTINGS_SIZE) {
         lines.clear();
@@ -68,33 +121,46 @@ string getSetting(const Setting setting) {
     checkSettings(lines);
     return lines[setting] <= defaultSettings[setting] ? "\"\"" : '\"' + lines[setting].substr(defaultSettings[setting].size()) + '\"';
 }
+int setPath(const Setting setting) {
+    system("cls");
+    const string current = getSetting(setting);
+    cout << "current: " << (current == "\"\"" ? "none" : current) << '\n';
+    displayOptions({"back", "same dir"}, 0);
 
-string cmdUrl{}, cmdQuality{}, cmdFps{};
+    if(setting == SETTING_PATH_FFMPEG) cout << "input ffmpeg path" << '\n';
+    else if(setting == SETTING_PATH_VIDEO) cout << "input path for video files" << '\n';
+    else if(setting == SETTING_PATH_AUDIO) cout << "input path for audio files" << '\n';
 
-string getInput(const vector<string>& valid_inputs) {
     string input;
-    bool valid = false;
-    do {
-        cin >> input;
-        for(auto& validInput : valid_inputs) if(input == validInput) valid = true;
-        if(!valid) cout << "invalid input try again" << '\n';
-    } while(!valid);
-    return input;
-}
-void displayOptions(const vector<string>& options, int start) {
-    auto prefix = [&start]()->string { return "[" + to_string(start++) + "] "; };
-    for(auto& option : options) cout << prefix() << option << '\n';
+    cin >> input;
+    if(input.length() == 1) {
+        if(input == "0") return 0;
+        if(input == "1") setSetting(setting, "");
+    } else setSetting(setting, input);
+
+    return 0;
 }
 
-int homeMenu();
-int qualityMenu();
-int urlMenu();
-int fpsMenu();
-int setPath(Setting setting);
-int packagesUpdate();
-int packagesVersion();
-int submit(int option);
 
+//files
+bool fileEmpty(const string& filepath, const bool remove_if_empty) {
+    ifstream file(filepath);
+    const bool result = file.peek() == ifstream::traits_type::eof();
+    file.close();
+    if(remove_if_empty && result) remove(filepath.c_str());
+    return result;
+}
+vector<string> loadFile(const string& filename) {
+    ifstream file(filename);
+    vector<string> lines;
+    string line;
+    while(getline(file, line)) lines.push_back(line);
+    file.close();
+    return lines;
+}
+
+
+//options and menus for commands
 int homeMenu() {
     system("cls");
     cout << "This is a simple console yt-dlp gui :)" << '\n';
@@ -152,55 +218,13 @@ int fpsMenu() {
 
     return submit(0);
 }
-int setPath(const Setting setting) {
-    system("cls");
-    const string current = getSetting(setting);
-    cout << "current: " << (current == "\"\"" ? "none" : current) << '\n';
-    displayOptions({"back", "same dir"}, 0);
-
-    if(setting == SETTING_PATH_FFMPEG) cout << "input ffmpeg path" << '\n';
-    else if(setting == SETTING_PATH_VIDEO) cout << "input path for video files" << '\n';
-    else if(setting == SETTING_PATH_AUDIO) cout << "input path for audio files" << '\n';
-
-    string input;
-    cin >> input;
-    if(input.length() == 1) {
-        if(input == "0") return 0;
-        if(input == "1") setSetting(setting, "");
-    } else setSetting(setting, input);
-
-    return 0;
-}
-
-int packagesUpdate() {
-    system("python.exe -m pip install --upgrade pip");
-    system("pip install wheel --upgrade");
-    system("pip install ffmpeg --upgrade");
-    system("pip install yt-dlp --upgrade");
-    return 0;
-}
-string extractVersion(const string& package_name) {
-    cout << package_name << " version" << '\n';
-    system(("pip show " + package_name + ">temp.txt").c_str());
-    const auto lines = loadFile("temp.txt");
-    remove("temp.txt");
-    return lines[1].substr(9);
-}
-int packagesVersion() {
-    cout << extractVersion("yt-dlp") << '\n' << '\n';
-    cout << extractVersion("wheel") << '\n' << '\n';
-    cout << extractVersion("ffmpeg") << '\n';
-    system("pause");
-    return 0;
-}
-
 int submit(const int option) {
     system("cls");
     string cmd("yt-dlp");
     if(option == 0)
         cmd += " -S " + cmdQuality + cmdFps + " -q --progress -P " + getSetting(SETTING_PATH_VIDEO) + " " + cmdUrl +
             "2>error.txt";
-    else if(option == 1){
+    else if(option == 1) {
         const string ffmpegPath = getSetting(SETTING_PATH_FFMPEG);
         cmd += " -x --audio-quality 0 -q --progress --audio-format \"m4a\" -P " + getSetting(SETTING_PATH_AUDIO) + ' ' +
             (ffmpegPath.empty() ? "" : "--ffmpeg-location " + ffmpegPath + ' ') + cmdUrl + "2>error.txt";
@@ -218,31 +242,24 @@ int submit(const int option) {
     return 0;
 }
 
-void installPackageMenu(const string& package) {
-    cout << '\n' << "install package " << package << " now?" << '\n';
-    displayOptions({"no (quit)", "yes"}, 0);
 
-    if(const int option = stoi(getInput({"0", "1"})); option == 0) exit(EXIT_FAILURE);
-    else if(option == 1) system(("pip install" + package).c_str());
+//other
+string getInput(const vector<string>& valid_inputs) {
+    string input;
+    bool valid = false;
+    do {
+        cin >> input;
+        for(auto& validInput : valid_inputs) if(input == validInput) valid = true;
+        if(!valid) cout << "invalid input try again" << '\n';
+    } while(!valid);
+    return input;
 }
-void checkPackageInstallation(const string& package) {
-    system(("pip show " + package + ">NUL 2>error.txt").c_str());
-    if(!fileEmpty("error.txt", true)) {
-        cout << "ERROR: " + package + " is not installed" << '\n';
-        installPackageMenu(package);
-        system("cls");
-    }
-    remove("error.txt");
+void displayOptions(const vector<string>& options, int start) {
+    auto prefix = [&start]()->string { return "[" + to_string(start++) + "] "; };
+    for(auto& option : options) cout << prefix() << option << '\n';
 }
-void checkForPackages() {
-    system("pip help>NUL 2>error.txt");
-    if(!fileEmpty("error.txt", true)) {
-        cout << "ERROR: pip is not installed or not in PATH. Fix that first" << '\n';
-        remove("error.txt");
-        exit(EXIT_FAILURE);
-    }
-    for(auto& package : packages) checkPackageInstallation(package);
-}
+
+
 
 int main() {
     checkForPackages();
