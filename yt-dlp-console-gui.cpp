@@ -257,6 +257,7 @@ string getInput(const vector<string>& valid_inputs) {
 void displayOptions(const vector<string>& options, int start) {
     auto prefix = [&start]()->string { return "[" + to_string(start++) + "] "; };
     for(auto& option : options) cout << prefix() << option << '\n';
+    cout << '\n';
 }
 
 

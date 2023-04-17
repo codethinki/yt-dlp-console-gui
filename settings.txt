@@ -1,3 +1,3 @@
 videoPath=E:\media\music
-audioPath=asdf
+audioPath=E:\media\video\yt
 ffmpegPath=
