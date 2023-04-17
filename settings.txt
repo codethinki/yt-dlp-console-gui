@@ -1,3 +1,0 @@
-videoPath=E:\media\music
-audioPath=E:\media\video\yt
-ffmpegPath=

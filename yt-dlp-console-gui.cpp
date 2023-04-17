@@ -10,8 +10,8 @@ using namespace std;
 //#####################################################
 
 //packages
-constexpr int packagesCount = 3;
-const string packages[packagesCount]{"yt-dlp", "wheel", "ffmpeg"};
+constexpr int packagesCount = 2;
+const string packages[packagesCount]{"yt-dlp", "wheel"};
 
 int packagesUpdate();
 int packagesVersion();
@@ -53,7 +53,6 @@ string getInput(const vector<string>& valid_inputs);
 int packagesUpdate() {
     system("python.exe -m pip install --upgrade pip");
     system("pip install wheel --upgrade");
-    system("pip install ffmpeg --upgrade");
     system("pip install yt-dlp --upgrade");
     return 0;
 }
@@ -67,7 +66,6 @@ string extractVersion(const string& package_name) {
 int packagesVersion() {
     cout << extractVersion("yt-dlp") << '\n' << '\n';
     cout << extractVersion("wheel") << '\n' << '\n';
-    cout << extractVersion("ffmpeg") << '\n';
     system("pause");
     return 0;
 }
