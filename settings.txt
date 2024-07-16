@@ -1,0 +1,3 @@
+videoPath=
+audioPath=
+ffmpegPath=C:\ProgramData\chocolatey\bin\ffmpeg.exe

@@ -1,0 +1,26 @@
+Chocolatey v2.3.0
+chocolatey 2.3.0
+chocolatey-compatibility.extension 1.0.0
+chocolatey-core.extension 1.4.0
+chocolatey-dotnetfx.extension 1.0.1
+chocolatey-visualstudio.extension 1.11.1
+chocolatey-windowsupdate.extension 1.0.5
+dotnetfx 4.8.0.20220524
+doxygen.install 1.11.0
+ffmpeg 7.0.1
+KB2919355 1.0.20160915
+KB2919442 1.0.20160915
+KB2999226 1.0.20181019
+KB3033929 1.0.5
+KB3035131 1.0.3
+ninja 1.12.1
+python 3.12.4
+python3 3.12.4
+python312 3.12.4
+vcredist140 14.40.33810
+vcredist2015 14.0.24215.20170201
+visualstudio2019buildtools 16.11.36
+visualstudio2019-workload-vctools 1.0.1
+visualstudio-installer 2.0.3
+yt-dlp 2024.7.9
+24 packages installed.
