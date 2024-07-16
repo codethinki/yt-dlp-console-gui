@@ -12,8 +12,8 @@ using namespace std;
 //#####################################################
 
 //packages
-constexpr int PACKAGES_COUNT = 2;
-const string packages[PACKAGES_COUNT]{"yt-dlp"};
+constexpr int PACKAGES_COUNT = 1;
+const std::array<string_view, PACKAGES_COUNT> packages{"yt-dlp"};
 
 constexpr string_view SETTINGS_FILE = "settings.txt";
 
@@ -23,10 +23,10 @@ string extractVersion(const string& package_name);
 
 //settings
 enum Setting { SETTING_PATH_VIDEO, SETTING_PATH_AUDIO, SETTING_PATH_FFMPEG, SETTINGS_SIZE };
-const string DEFAULT_SETTINGS[SETTINGS_SIZE]{"videoPath=", "audioPath=", "ffmpegPath="};
+constexpr std::array<string_view, SETTINGS_SIZE> DEFAULT_SETTINGS{"videoPath=", "audioPath=", "ffmpegPath="};
 
 void checkSettings(vector<string>& lines);
-void setSetting(Setting setting, const string& content);
+void setSetting(Setting setting, string_view content);
 string getSetting(Setting setting);
 int setPath(Setting setting);
 
@@ -67,7 +67,7 @@ void installPackageMenu(std::string_view package) {
     if(const int option = stoi(getInput({"0", "1"})); option == 0) exit(EXIT_FAILURE);
     else if(option == 1) system(std::format("choco install {}", package).c_str());
 }
-void checkPackageInstallation(const string& package) {
+void checkPackageInstallation(const string_view package) {
     constexpr string_view packageList = "package_list.txt";
 
     system(std::format("choco list>{}", packageList).c_str());
@@ -86,23 +86,23 @@ void checkForPackages() {
         remove("error.txt");
         exit(EXIT_FAILURE);
     }
-    for(auto& package : packages) checkPackageInstallation(package);
+    for(auto package : packages) checkPackageInstallation(package);
 }
 
 //settings
 void checkSettings(vector<string>& lines) {
-    if(lines.size() < SETTINGS_SIZE) {
-        lines.clear();
-        for(auto& setting : DEFAULT_SETTINGS) lines.push_back(setting);
-    }
+    if(lines.size() >= SETTINGS_SIZE) return;
+    lines.clear();
+    for(auto setting : DEFAULT_SETTINGS) lines.push_back(std::string(setting));
+
 }
-void setSetting(const Setting setting, const string& content) {
+void setSetting(const Setting setting, string_view content) {
     auto lines = cth::io::loadTxt(SETTINGS_FILE.data());
     checkSettings(lines);
 
-    if(setting == SETTING_PATH_VIDEO) lines[SETTING_PATH_VIDEO] = DEFAULT_SETTINGS[SETTING_PATH_VIDEO] + content;
-    else if(setting == SETTING_PATH_AUDIO) lines[SETTING_PATH_AUDIO] = DEFAULT_SETTINGS[SETTING_PATH_AUDIO] + content;
-    else if(setting == SETTING_PATH_FFMPEG) lines[SETTING_PATH_FFMPEG] = DEFAULT_SETTINGS[SETTING_PATH_FFMPEG] + content;
+    if(setting == SETTING_PATH_VIDEO) lines[SETTING_PATH_VIDEO] = std::format("{0}{1}", DEFAULT_SETTINGS[SETTING_PATH_VIDEO], content);
+    else if(setting == SETTING_PATH_AUDIO) lines[SETTING_PATH_AUDIO] = std::format("{0}{1}", DEFAULT_SETTINGS[SETTING_PATH_AUDIO], content);
+    else if(setting == SETTING_PATH_FFMPEG) lines[SETTING_PATH_FFMPEG] = std::format("{0}{1}", DEFAULT_SETTINGS[SETTING_PATH_FFMPEG], content);
 
     ofstream outFile(SETTINGS_FILE.data(), std::ios::trunc);
     for(auto& oLine : lines) outFile << oLine << '\n';
