@@ -1,78 +1,21 @@
-#include <cth/cth.hpp>
+#include "main.hpp"
 
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <string>
+
 #include <Windows.h>
 
+
 using namespace std;
-//#####################################################
-//definitions
-//#####################################################
 
-//packages
-constexpr int PACKAGES_COUNT = 1;
-const std::array<string_view, PACKAGES_COUNT> packages{"yt-dlp"};
-
-constexpr string_view SETTINGS_FILE = "settings.txt";
-
-int packagesUpdate();
-string extractVersion(const string& package_name);
-
-
-//settings
-enum Setting { SETTING_PATH_VIDEO, SETTING_PATH_AUDIO, SETTING_PATH_FFMPEG, SETTINGS_SIZE };
-constexpr std::array<string_view, SETTINGS_SIZE> DEFAULT_SETTINGS{"videoPath=", "audioPath=", "ffmpegPath="};
-
-void checkSettings(vector<string>& lines);
-void setSetting(Setting setting, string_view content);
-string getSetting(Setting setting);
-int setPath(Setting setting);
-
-//files
-bool fileEmpty(const string& filepath, bool remove_if_empty);
-
-
-//options and menus for commands
-string cmdUrl{}, cmdQuality{}, cmdFps{};
-int homeMenu();
-int qualityMenu();
-int urlMenu();
-int fpsMenu();
-int submit(int option);
-
-//other
-void displayOptions(const vector<string>& options, int start);
-string getInput(const vector<string>& valid_inputs);
-
-//#####################################################
-//implementations
-//#####################################################
-
-
-//packages
-int packagesUpdate() {
-
-    system("choco upgrade yt-dlp");
-    return 0;
-}
-
-
-void installPackageMenu(std::string_view package) {
-
-    std::println("\ninstallpackage {} now?", package);
-    displayOptions({"no (quit)", "yes"}, 0);
-
-    if(const int option = stoi(getInput({"0", "1"})); option == 0) exit(EXIT_FAILURE);
-    else if(option == 1) system(std::format("choco install {}", package).c_str());
-}
-void checkPackageInstallation(const string_view package) {
+void checkPackageInstallation(string_view const package) {
     constexpr string_view packageList = "package_list.txt";
 
     system(std::format("choco list>{}", packageList).c_str());
-    const auto lines = cth::io::loadTxt(packageList);
-    if(std::ranges::none_of(lines, [package](const string_view line) { return line.contains(package); })) {
+    auto const lines = cth::io::loadTxt(packageList);
+    if(std::ranges::none_of(lines, [package](string_view const line) { return line.contains(package); })) {
         std::println("ERROR: package [{}] is not installed", package);
         installPackageMenu(package);
         system("cls");
@@ -86,17 +29,17 @@ void checkForPackages() {
         remove("error.txt");
         exit(EXIT_FAILURE);
     }
-    for(auto package : packages) checkPackageInstallation(package);
+    for(auto const package : packages) checkPackageInstallation(package);
 }
 
 //settings
 void checkSettings(vector<string>& lines) {
     if(lines.size() >= SETTINGS_SIZE) return;
     lines.clear();
-    for(auto setting : DEFAULT_SETTINGS) lines.push_back(std::string(setting));
+    for(auto setting : DEFAULT_SETTINGS) lines.emplace_back(setting);
 
 }
-void setSetting(const Setting setting, string_view content) {
+void setSetting(Setting const setting, string_view content) {
     auto lines = cth::io::loadTxt(SETTINGS_FILE.data());
     checkSettings(lines);
 
@@ -108,15 +51,15 @@ void setSetting(const Setting setting, string_view content) {
     for(auto& oLine : lines) outFile << oLine << '\n';
     outFile.close();
 }
-string getSetting(const Setting setting) {
+string getSetting(Setting const setting) {
     auto lines = cth::io::loadTxt(SETTINGS_FILE.data());
     checkSettings(lines);
     return lines[setting] <= DEFAULT_SETTINGS[setting] ? R"("")" : std::format(R"("{}")", lines[setting].substr(DEFAULT_SETTINGS[setting].size()));
 }
-int setPath(const Setting setting) {
+int setPath(Setting const setting) {
     system("cls");
-    const string current = getSetting(setting);
-    cout << "current: " << (current == "\"\"" ? "none" : current) << '\n';
+    string const current = getSetting(setting);
+    println("current: {}", current == "\"\"" ? "none" : current);
     displayOptions({"back", "same dir"}, 0);
 
     if(setting == SETTING_PATH_FFMPEG) std::println("input ffmpeg path");
@@ -134,11 +77,11 @@ int setPath(const Setting setting) {
 }
 
 //files
-bool fileEmpty(const string& filepath, const bool remove_if_empty) {
-    ifstream file(filepath);
-    const bool result = file.peek() == ifstream::traits_type::eof();
+bool fileEmpty(std::string_view const filepath, bool const remove_if_empty) {
+    ifstream file(filepath.data());
+    bool const result = file.peek() == ifstream::traits_type::eof();
     file.close();
-    if(remove_if_empty && result) remove(filepath.c_str());
+    if(remove_if_empty && result) std::filesystem::remove(filepath);
     return result;
 }
 
@@ -148,7 +91,8 @@ int homeMenu() {
     system("cls");
     std::println("This is a simple console yt-dlp gui :)");
 
-    const vector<string> options = {"start",
+    vector<string> const options = {
+        "start",
         "set video output path",
         "set audio output path",
         "set ffmpeg path (only for audio files)",
@@ -158,20 +102,21 @@ int homeMenu() {
     displayOptions(options, 1);
     println("[0] exit");
 
-    const int result = stoi(getInput({"0", "1", "2", "3", "4", "5"}));
+    int const result = stoi(getInput({"0", "1", "2", "3", "4", "5"}));
     if(result == 0) exit(EXIT_SUCCESS);
     if(result == 1) return urlMenu();
     if(result >= 2 && result <= 4) return setPath(static_cast<Setting>(result - 2));
     if(result == 5) return packagesUpdate();
     return 0;
 }
+
 int qualityMenu() {
     system("cls");
     std::println("\nchoose the video quality:");
-    const vector<string> options{"back", "only audio", "2160p", "1440p", "1080p", "720p", "480p", "144p"};
+    vector<string> const options{"back", "only audio", "2160p", "1440p", "1080p", "720p", "480p", "144p"};
     displayOptions(options, 0);
 
-    if(const int option = stoi(getInput({"0", "1", "2", "3", "4", "5", "6", "7", "8"})); option == 0) return urlMenu();
+    if(int const option = stoi(getInput({"0", "1", "2", "3", "4", "5", "6", "7", "8"})); option == 0) return urlMenu();
     else {
         if(option == 1) return submit(1);
         cmdQuality = std::format("\"res: {}", options[option].substr(0, options[option].length() - 1));
@@ -195,13 +140,13 @@ int fpsMenu() {
     cout << '\n' << "choose fps:" << '\n';
     displayOptions({"back", "60 fps", "30 fps"}, 0);
 
-    if(const int input = stoi(getInput({"0", "1", "2"})); input == 0) return qualityMenu();
+    if(int const input = stoi(getInput({"0", "1", "2"})); input == 0) return qualityMenu();
     else if(input == 1) cmdFps = ",fps:60\"";
     else if(input == 2) cmdFps = ",fps:30\"";
 
     return submit(0);
 }
-int submit(const int option) {
+int submit(int const option) {
     system("cls");
     string cmd("yt-dlp");
 
@@ -209,9 +154,9 @@ int submit(const int option) {
     if(option == 0)
         cmd += std::format(" -S {0} {1} -q --progress -P {2} {3}2>error.txt", cmdQuality, cmdFps, getSetting(SETTING_PATH_VIDEO), cmdUrl);
     else if(option == 1) {
-        const string ffmpegPath = getSetting(SETTING_PATH_FFMPEG);
+        string const ffmpegPath = getSetting(SETTING_PATH_FFMPEG);
 
-        const string ffmpeg = ffmpegPath.empty() ? "" : std::format("--ffmpeg-location {} ", ffmpegPath);
+        string const ffmpeg = ffmpegPath.empty() ? "" : std::format("--ffmpeg-location {} ", ffmpegPath);
 
         cmd += std::format(" -x --audio-quality 0 -q --progress --audio-format \"m4a\" -P {0} {1} {2}2>error.txt",
             getSetting(SETTING_PATH_AUDIO), ffmpeg, cmdUrl);
@@ -222,16 +167,37 @@ int submit(const int option) {
     if(fileEmpty("error.txt", true)) println("\nfinished");
     else {
         println("\nFAILED");
-        for(const auto lines = cth::io::loadTxt("error.txt"); auto& line : lines) println("{}", line);
+        for(auto const lines = cth::io::loadTxt("error.txt"); auto& line : lines) println("{}", line);
     }
     system("pause");
     remove("error.txt");
     return 0;
 }
+int packagesUpdate() {
+    for(auto const package : packages) upgradePackageMenu(package);
+    return 0;
+}
+void installPackageMenu(std::string_view package) {
+
+    std::println("\ninstall package {} now?", package);
+    displayOptions({"no (quit)", "yes"}, 0);
+
+    if(int const option = stoi(getInput({"0", "1"})); option == 0) exit(EXIT_FAILURE);
+    else if(option == 1) system(std::format("choco install {}", package).c_str());
+}
+void upgradePackageMenu(std::string_view package) {
+    std::println("\nupgrade ({}) now?", package);
+    displayOptions({"no", "yes"}, 0);
+    int const option = stoi(getInput({"0", "1"}));
+
+    if(option == 0) return;
+
+    if(option == 1) system(std::format("choco upgrade {}", package).c_str());
+}
 
 
 //other
-string getInput(const vector<string>& valid_inputs) {
+string getInput(vector<string> const& valid_inputs) {
     string input;
     bool valid = false;
     do {
@@ -241,7 +207,7 @@ string getInput(const vector<string>& valid_inputs) {
     } while(!valid);
     return input;
 }
-void displayOptions(const vector<string>& options, int start) {
+void displayOptions(vector<string> const& options, int start) {
     auto prefix = [&start]()-> string { return std::format(" [{}] ", to_string(start++)); };
     for(auto& option : options) std::println("{0}{1}", prefix(), option);
 }
@@ -249,9 +215,17 @@ void displayOptions(const vector<string>& options, int start) {
 
 
 int main() {
-    checkForPackages();
-    while(true) {
-        homeMenu();
-        system("cls");
+    try {
+        checkForPackages();
+
+        while(true) {
+            homeMenu();
+            system("cls");
+        }
+    }
+    catch(std::exception const& e) {
+        std::println("ERROR EXCEPTION ENCOUNTERED: {}", e.what());
+        system("pause");
+        exit(EXIT_SUCCESS);
     }
 }
