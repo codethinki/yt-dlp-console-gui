@@ -1,6 +1,8 @@
-compile with c++23 and my cth library.
-  if the cth library is incompatible (any compiler errors) create an issue i'll fix it or get the right date cth urself :)
+## requirements 
+- yt-dlp
+- ffmpeg (only for audio)
 
-needs yt-dlp and if you want to only download music ffmpeg.
-
-both should be in the path, altho ffmpeg can be manually specified
+## install
+either:
+- download binary
+- compile yourself with c++23, codethinki/cth (if cth as any changes and is incompatible create an issue)
