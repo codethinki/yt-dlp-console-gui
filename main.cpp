@@ -138,9 +138,13 @@ int submit(int option) {
     string cmd{"yt-dlp"};
 
 
-    if(option == 0)
-        cmd += std::format(" -S {0} {1} -q --progress -P {2} {3}2>error.txt", cmdQuality, cmdFps, getSetting(SETTING_PATH_VIDEO), cmdUrl);
-    else if(option == 1) {
+    if(option == 0) {
+        auto videoSetting = getSetting(SETTING_PATH_VIDEO);
+
+        auto video = !videoSetting.empty() ? std::format("-P {}", videoSetting) : "";
+
+        cmd += std::format(" -S {0} {1} -q --progress {2} {3}2>error.txt", cmdQuality, cmdFps, video, cmdUrl);
+    } else if(option == 1) {
         auto ffmpegSetting = getSetting(SETTING_PATH_FFMPEG);
         auto audioSetting = getSetting(SETTING_PATH_AUDIO);
 
